@@ -11,11 +11,11 @@ from telethon.tl.functions.messages import ImportChatInviteRequest
 from telethon.utils import get_peer_id
 
 # ==== НАСТРОЙКИ ====
-api_id = 0000 #USER_ID
-api_hash = "USER_TOKEN"
+api_id = 0000 # Ваш API_ID
+api_hash = "USER_TOKEN" # Ваш API_HASH
 
-CHANNELS_FILE = "channels.txt"
-USERS_FILE = "users.txt"
+CHANNELS_FILE = "channels.txt" # Файл со списком каналов
+USERS_FILE = "users.txt"       # Файл со списком пользователей
 
 client = TelegramClient("session", api_id, api_hash)
 
@@ -26,7 +26,7 @@ channels_peers: set[int] = set()
 users: set[int] = set()
 registered_peers: set[int] = set()
 
-# ---------- Работа с файлами ----------
+# === Работа с файлами ===
 def load_list(filename: str) -> set[int]:
     if not os.path.exists(filename):
         return set()
@@ -46,7 +46,7 @@ def save_list(filename: str, s: set[int]):
         for x in sorted(s):
             f.write(str(x) + "\n")
 
-# ---------- Парсинг ----------
+# === Парсинг ===
 def parse_channel_input(text: str):
     t = text.strip()
     if re.fullmatch(r"-?\d{5,}", t):
@@ -91,7 +91,7 @@ async def resolve_peer_id(kind: str, value: Union[str, int]) -> int:
     entity = await client.get_entity(value)
     return get_peer_id(entity)
 
-# ---------- Подписка ----------
+# === Подписка ===
 def register_forward_handler(peer_id: int):
     if peer_id in registered_peers:
         return
@@ -107,7 +107,7 @@ def register_forward_handler(peer_id: int):
     registered_peers.add(peer_id)
     print(f"[*] Подписан на канал {peer_id}")
 
-# ---------- Добавление канала ----------
+# === Добавление канала ===
 async def add_channel_from_event(event) -> str:
     text = (event.raw_text or "").strip()
     fwd = getattr(event.message, "fwd_from", None)
@@ -128,7 +128,6 @@ async def add_channel_from_event(event) -> str:
             title = getattr(ent, "title", None) or getattr(ent, "username", None) or str(pid)
             return f"✅ Канал «{title}» добавлен по пересланному сообщению."
 
-    # Добавление по ссылке / username
     if text:
         kind, value = parse_channel_input(text)
         pid = await resolve_peer_id(kind, value)
@@ -143,7 +142,7 @@ async def add_channel_from_event(event) -> str:
 
     return "❌ Не удалось определить канал. Перешли сообщение из него или пришли ссылку."
 
-# ---------- Команды ----------
+# === Команды ===
 @client.on(events.NewMessage(pattern=r"^/add$"))
 async def cmd_add(event):
     global waiting_for_channel
@@ -201,7 +200,7 @@ async def cmd_help(event):
     )
     await event.reply(text)
 
-# ---------- Удаление канала ----------
+# === Удаление канала ===
 remove_mode = False
 
 @client.on(events.NewMessage(pattern=r"^/remove$"))
@@ -257,7 +256,7 @@ async def handle_modes(event):
             await event.reply("❌ Нужно отправить число (peer_id).")
 
 
-# ---------- Добавление/удаление пользователей ----------
+# === Добавление/удаление пользователей ===
 @client.on(events.NewMessage(pattern=r"^/adduser$"))
 async def cmd_adduser(event):
     global waiting_for_user
@@ -281,7 +280,7 @@ async def cmd_removeuser(event):
     except Exception:
         await event.reply("❌ Используй: /removeuser <ID>")
 
-# ---------- Запуск ----------
+# === Запуск ===
 async def bootstrap():
     channels_peers.update(load_list(CHANNELS_FILE))
     users.update(load_list(USERS_FILE))
