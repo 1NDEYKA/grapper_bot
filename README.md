@@ -23,8 +23,8 @@
 
 ```bash
 # Клонируйте репозиторий (или скопируйте файл скрипта)
-git clone <your-repo-url>
-cd telegram-forward-bot
+git clone https://github.com/HalcyonSoul/grapper_bot
+cd telegram-forward-bo
 ```
 Установите необходимую зависимость
 ```bash
